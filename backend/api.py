@@ -40,6 +40,13 @@ def init_db():
             FOREIGN KEY(student_id) REFERENCES users(id)
         )
     ''')
+    
+    # Auto-seed a default admin account if it doesn't exist
+    conn.execute('''
+        INSERT OR IGNORE INTO users (username, password, role) 
+        VALUES ('admin', 'admin123', 'admin')
+    ''')
+    
     conn.commit()
     conn.close()
 
