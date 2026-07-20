@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; background-color: #e9ecef; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto;}
+        .logout { color: white; background: #dc3545; padding: 8px 15px; text-decoration: none; border-radius: 4px; float: right; }
+        .logout:hover { background: #c82333; }
+        h1, h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px;}
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #343a40; color: white;}
+        .delete-btn { color: white; background: #dc3545; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 14px;}
+        .delete-btn:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/logout" class="logout">Logout</a>
+        <h1>Coders Hub Admin Panel ⚙️</h1>
+        <p>Welcome Admin. From here you can manage the entire application.</p>
+        
+        <hr style="margin: 30px 0; border-top: 1px solid #ccc;">
+
+        <h2>Registered Users</h2>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Subject (Teachers)</th>
+                <th>Action</th>
+            </tr>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td><span style="font-weight: bold; color: {% if user.role == 'teacher' %}blue{% elif user.role == 'admin' %}red{% else %}green{% endif %};">{{ user.role|title }}</span></td>
+                <td>
+                    {% if user.role == 'teacher' %}
+                    <form action="/assign_subject/{{ user.id }}" method="POST" style="margin: 0; display: flex; gap: 5px;">
+                        <select name="subject" style="padding: 4px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="EM-2" {% if user.subject == 'EM-2' %}selected{% endif %}>EM-2</option>
+                            <option value="Engineering Physics" {% if user.subject == 'Engineering Physics' %}selected{% endif %}>Engineering Physics</option>
+                            <option value="DSDA" {% if user.subject == 'DSDA' %}selected{% endif %}>DSDA</option>
+                            <option value="FCSN" {% if user.subject == 'FCSN' %}selected{% endif %}>FCSN</option>
+                            <option value="FCPP" {% if user.subject == 'FCPP' %}selected{% endif %}>FCPP</option>
+                        </select>
+                        <button type="submit" class="delete-btn" style="background: #2563eb; padding: 4px 8px;">Save</button>
+                    </form>
+                    {% else %}
+                    <span style="color: #999;">N/A</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.role != 'admin' %}
+                    <a href="/delete_user/{{ user.id }}" class="delete-btn" onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
+                    {% else %}
+                    <i>Cannot delete admin</i>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <hr style="margin: 30px 0; border-top: 1px solid #ccc;">
+
+        <h2>System-Wide Attendance Logs</h2>
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Subject</th>
+                <th>Student</th>
+                <th>Status</th>
+            </tr>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.date }}</td>
+                <td>{{ log.subject }}</td>
+                <td>{{ log.username }}</td>
+                <td style="color: green; font-weight: bold;">{{ log.status }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">No attendance records found.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

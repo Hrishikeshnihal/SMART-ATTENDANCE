@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Portal - Coders Hub University</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 0;
+            color: var(--text-main);
+        }
+
+        .navbar {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+        .logout-btn { color: var(--danger); text-decoration: none; font-weight: 500; }
+        
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        
+        .header-section { margin-bottom: 2rem; }
+        .header-section h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .header-section p { color: var(--text-muted); margin: 0; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            text-align: center;
+            border-top: 4px solid var(--primary);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card h3 { color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.5rem 0; }
+        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: var(--text-main); margin: 0; }
+        
+        .stat-card.present { border-top-color: var(--success); }
+        .stat-card.absent { border-top-color: var(--danger); }
+
+        .card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .card h2 { margin-top: 0; font-size: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+
+        .progress-container {
+            background: #e2e8f0;
+            border-radius: 999px;
+            height: 12px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--primary);
+            transition: width 1s ease-in-out;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+        tr:last-child td { border-bottom: none; }
+        .status-badge { 
+            background: #dcfce7; color: #166534; padding: 0.25rem 0.75rem; 
+            border-radius: 999px; font-size: 0.875rem; font-weight: 500; 
+        }
+
+        .camera-section { text-align: center; }
+        video { border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; display: none; margin: 1rem auto; }
+        canvas { display: none; }
+        .btn {
+            background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem;
+            border-radius: 6px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.2s;
+        }
+        .btn:hover { background: var(--primary-hover); }
+
+        #registerMsg { margin-top: 1rem; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Coders Hub Logo" style="height: 40px; width: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2>Coders Hub University</h2>
+        </div>
+        <a href="/logout" class="logout-btn">Log Out</a>
+    </div>
+
+    <div class="container">
+        <div class="header-section">
+            <h1>Welcome, {{ username }}</h1>
+            <p>Student Academic Portal - Multi-Subject Tracking</p>
+        </div>
+
+        {% for stat in student_stats %}
+        <div class="card" style="margin-bottom: 2rem;">
+            <h2 style="color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem;">
+                {{ stat.subject }}
+            </h2>
+            
+            <div class="stats-grid" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="stat-card">
+                    <h3>Total Lectures</h3>
+                    <p class="value">{{ stat.total }}</p>
+                </div>
+                <div class="stat-card present">
+                    <h3>Attended</h3>
+                    <p class="value">{{ stat.attended }}</p>
+                </div>
+                <div class="stat-card absent">
+                    <h3>Absent</h3>
+                    <p class="value">{{ stat.missed }}</p>
+                </div>
+                <div class="stat-card" style="border-top-color: {% if stat.percentage >= 75 %}var(--success){% elif stat.percentage < 50 %}var(--danger){% else %}#f59e0b{% endif %}">
+                    <h3>Percentage</h3>
+                    <p class="value">{{ stat.percentage }}%</p>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar" style="width: {{ stat.percentage }}%; background: {% if stat.percentage >= 75 %}var(--success){% elif stat.percentage < 50 %}var(--danger){% else %}#f59e0b{% endif %};"></div>
+            </div>
+            <p style="margin-top:0.5rem; font-size: 0.85rem; color: var(--text-muted);">Minimum requirement: 75%</p>
+        </div>
+        {% endfor %}
+
+        {% if not face_registered %}
+        <div class="card camera-section">
+            <h2>Initial Face Registration</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Please register your face once for the AI attendance system.</p>
+            <button class="btn" id="startCamera" onclick="startVideo()">Turn on Camera</button>
+            
+            <video id="video" autoplay></video>
+            <canvas id="canvas"></canvas>
+            
+            <button class="btn" id="captureBtn" onclick="registerFace()" style="display: none; margin: 1rem auto; background: var(--success);">Register My Face</button>
+            <p id="registerMsg"></p>
+        </div>
+        {% endif %}
+
+        <!-- Note: Global Attendance log table removed to keep the dashboard clean. 
+             If needed, we can add a route to view detailed logs per subject later. -->
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureBtn = document.getElementById('captureBtn');
+        const registerMsg = document.getElementById('registerMsg');
+
+        function startVideo() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    captureBtn.style.display = 'inline-block';
+                    document.getElementById('startCamera').style.display = 'none';
+                })
+                .catch(err => {
+                    console.error("Camera access denied:", err);
+                    alert("Please allow camera access!");
+                });
+        }
+
+        function registerFace() {
+            registerMsg.innerText = "Processing...";
+            registerMsg.style.color = "var(--primary)";
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg');
+
+            fetch('/register_face', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: dataUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    registerMsg.innerText = "Success! You are now registered.";
+                    registerMsg.style.color = "var(--success)";
+                    video.style.display = 'none';
+                    captureBtn.style.display = 'none';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    registerMsg.innerText = "Registration failed.";
+                    registerMsg.style.color = "var(--danger)";
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                registerMsg.innerText = "Error connecting to server.";
+                registerMsg.style.color = "var(--danger)";
+            });
+        }
+    </script>
+</body>
+</html>

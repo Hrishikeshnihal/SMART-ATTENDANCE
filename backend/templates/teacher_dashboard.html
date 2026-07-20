@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Portal - Coders Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 0;
+            color: var(--text-main);
+        }
+
+        .navbar {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+        .logout-btn { color: var(--danger); text-decoration: none; font-weight: 500; }
+        
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        
+        .header-section { margin-bottom: 2rem; }
+        .header-section h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .header-section p { color: var(--text-muted); margin: 0; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            text-align: center;
+            border-top: 4px solid var(--primary);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card h3 { color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.5rem 0; }
+        .stat-card .value { font-size: 2.5rem; font-weight: 700; color: var(--text-main); margin: 0; }
+        
+        .stat-card.present { border-top-color: var(--success); }
+        .stat-card.total { border-top-color: #8b5cf6; }
+
+        .card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .card h2 { margin-top: 0; font-size: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+        tr:last-child td { border-bottom: none; }
+        .status-badge { 
+            background: #dcfce7; color: #166534; padding: 0.25rem 0.75rem; 
+            border-radius: 999px; font-size: 0.875rem; font-weight: 500; 
+        }
+
+        .camera-section { text-align: center; }
+        video { border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; display: none; margin: 1rem auto; }
+        canvas { display: none; }
+        .btn {
+            background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem;
+            border-radius: 6px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.2s;
+        }
+        .btn:hover { background: var(--primary-hover); }
+
+        #registerMsg { margin-top: 1rem; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Coders Hub Logo" style="height: 40px; width: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2>Coders Hub University</h2>
+        </div>
+        <a href="/logout" class="logout-btn">Log Out</a>
+    </div>
+
+    <div class="container">
+        <div class="header-section">
+            <h1>Professor {{ username }}</h1>
+            <p>{{ subject }} - Faculty Administration Dashboard</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Lectures</h3>
+                <p class="value">{{ total_lectures }}</p>
+            </div>
+            <div class="stat-card total">
+                <h3>Total Students</h3>
+                <p class="value">{{ total_students }}</p>
+            </div>
+            <div class="stat-card present">
+                <h3>Present Today</h3>
+                <p class="value">{{ today_present }}</p>
+            </div>
+        </div>
+
+        <div class="card camera-section">
+            <h2>Live AI Attendance Capture</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Point the camera at the classroom to instantly record attendance for all recognized students.</p>
+            <button class="btn" id="startCamera" onclick="startVideo()">Turn on Classroom Camera</button>
+            
+            <video id="video" autoplay></video>
+            <canvas id="canvas"></canvas>
+            
+            <button class="btn" id="captureBtn" onclick="takeAttendance()" style="display: none; margin: 1rem auto; background: var(--success);">Capture & Mark Attendance</button>
+            <br>
+            <button class="btn" id="switchCameraBtn" onclick="switchCamera()" style="display: none; margin: 0 auto; background: var(--text-muted);">🔄 Flip Camera</button>
+            <p id="msg"></p>
+        </div>
+
+        <div class="card">
+            <h2>Classroom Attendance Roster</h2>
+            
+            <form method="GET" action="/teacher-dashboard" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                <label for="date" style="font-weight: 500; color: var(--text-muted);">Select Date:</label>
+                <input type="date" id="date" name="date" value="{{ selected_date }}" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; font-family: inherit;">
+                <button type="submit" class="btn" style="padding: 8px 16px;">Filter</button>
+            </form>
+
+            <table>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                {% for log in logs %}
+                <tr>
+                    <td style="font-weight: 500;">{{ log.username }}</td>
+                    <td>{{ log.date }}</td>
+                    <td>
+                        {% if log.status == 'Present' %}
+                        <span class="status-badge">{{ log.status }}</span>
+                        {% else %}
+                        <span class="status-badge" style="background: #fee2e2; color: #991b1b;">{{ log.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if log.status == 'Absent' %}
+                        <form action="/manual_mark_present/{{ log.student_id }}/{{ log.date }}" method="POST" style="margin:0;">
+                            <button type="submit" class="btn" style="padding: 4px 12px; font-size: 0.8rem; background: var(--text-muted);">Mark Present</button>
+                        </form>
+                        {% else %}
+                        <span style="color: var(--success); font-size: 0.85rem; font-weight: 500;">Recorded ✓</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureBtn = document.getElementById('captureBtn');
+        const msg = document.getElementById('msg');
+        const switchCameraBtn = document.getElementById('switchCameraBtn');
+        let currentFacingMode = 'user';
+        let currentStream = null;
+
+        function startVideo() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode } })
+                .then(stream => {
+                    currentStream = stream;
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    captureBtn.style.display = 'inline-block';
+                    switchCameraBtn.style.display = 'inline-block';
+                    document.getElementById('startCamera').style.display = 'none';
+                })
+                .catch(err => {
+                    console.error("Camera access denied:", err);
+                    alert("Please allow camera access!");
+                });
+        }
+
+        function switchCamera() {
+            currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+            startVideo();
+        }
+
+        function takeAttendance() {
+            msg.innerText = "Analyzing classroom with AI... Please wait.";
+            msg.style.color = "var(--primary)";
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg');
+
+            fetch('/mark_attendance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: dataUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    msg.innerText = data.message;
+                    msg.style.color = "var(--success)";
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    msg.innerText = "Failed to mark attendance.";
+                    msg.style.color = "var(--danger)";
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                msg.innerText = "Error connecting to AI Server.";
+                msg.style.color = "var(--danger)";
+            });
+        }
+    </script>
+</body>
+</html>
