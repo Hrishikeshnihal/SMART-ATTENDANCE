@@ -18,6 +18,50 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def init_db():
+    conn = get_db_connection()
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,
+            subject TEXT,
+            face_image_path TEXT
+        )
+    ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS attendance (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL,
+            student_id INTEGER NOT NULL,
+            subject TEXT NOT NULL,
+            status TEXT NOT NULL,
+            FOREIGN KEY(student_id) REFERENCES users(id)
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def download_models():
+    import urllib.request
+    models_dir = 'static/models'
+    os.makedirs(models_dir, exist_ok=True)
+    
+    yunet_url = "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
+    sface_url = "https://github.com/opencv/opencv_zoo/raw/main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx"
+    
+    yunet_path = os.path.join(models_dir, "face_detection_yunet_2023mar.onnx")
+    sface_path = os.path.join(models_dir, "face_recognition_sface_2021dec.onnx")
+    
+    if not os.path.exists(yunet_path):
+        urllib.request.urlretrieve(yunet_url, yunet_path)
+    if not os.path.exists(sface_path):
+        urllib.request.urlretrieve(sface_url, sface_path)
+
+init_db()
+download_models()
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
