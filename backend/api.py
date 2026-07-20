@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sqlite3
 import os
@@ -7,7 +7,7 @@ import datetime
 import jwt
 from functools import wraps
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend/dist', static_url_path='/')
 CORS(app)
 app.config['SECRET_KEY'] = 'super_secret_jwt_key_123'
 UPLOAD_FOLDER = 'static/uploads'
@@ -386,6 +386,18 @@ def mark_attendance(current_user):
         'success': True, 
         'message': f"Attendance marked for: {', '.join(names) if names else 'No one recognized'}"
     })
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    # Don't serve React app for missing API routes
+    if path.startswith('api/'):
+        return jsonify({"error": "Not found"}), 404
+        
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
