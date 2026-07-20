@@ -3,3 +3,5 @@ Flask
 Werkzeug
 opencv-python-headless
 gunicorn
+PyJWT
+Flask-Cors
